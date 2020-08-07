@@ -1,4 +1,4 @@
-;;; elfeed-milseain.el --- Elfeed goodies, but in irish     -*- lexical-binding: t; -*-
+;;; elfeed-milseain.el --- My own elfeed goodies     -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020  sebastien
 
@@ -39,6 +39,8 @@
 (define-derived-mode elfeed-milseain-mode tabulated-list-mode
   "Milseain"
   "Elfeed Milseain mode"
+  (kill-all-local-variables)
+  (use-local-map elfeed-search-mode-map)
   (setq tabulated-list-format
         [("Date" 12 t)
          ("Feed" 22 t)
@@ -56,11 +58,15 @@
 (defun elfeed-milseain--feeds->tabulated (feeds)
   "Convert a list of FEEDS to a tabulated list format."
   (mapcar (lambda (entry)
-            (let ((date-entry (elfeed-milseain--feed-entry-date->string (elfeed-entry-date entry))))
+            (let ((date-entry (elfeed-milseain--feed-entry-date->string (elfeed-entry-date entry)))
+                  (unread (member 'unread (elfeed-entry-tags entry)))
+                  (title (elfeed-entry-title entry)))
               (list (elfeed-entry-id entry)
                     (vector date-entry
                             (elfeed-feed-title (elfeed-entry-feed entry))
-                            (elfeed-entry-title entry)
+                            (if unread
+                                (propertize title 'face 'bold)
+                              title)
                             (mapconcat #'symbol-name (elfeed-entry-tags entry) ","))))) feeds))
 
 (defun elfeed-milseain--display-entries ()
